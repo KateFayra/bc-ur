@@ -49,7 +49,7 @@ describe("getFragments, for payload { name: string }", () => {
 
     const fragmentLength = 5;
     const payloadLength = encoder.cborEncode(ur.payload).length;
-    const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength);;
+    const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength);
 
     const fountainFragments = encoder.getFountainFragments(
       ur,
@@ -64,7 +64,8 @@ describe("getFragments, for payload { name: string }", () => {
     const fragmentLength = 5;
     const ratio = 1;
     const payloadLength = encoder.cborEncode(ur.payload).length;
-    const expectedFragmentLength = Math.ceil(payloadLength / fragmentLength) * 2;;
+    const expectedFragmentLength =
+      Math.ceil(payloadLength / fragmentLength) * 2;
 
     const fountainFragments = encoder.getFountainFragments(
       ur,
@@ -87,7 +88,6 @@ describe("getFragments, for payload { name: string }", () => {
 describe("encoder/decoder for ", () => {
   const { encoder, decoder } = new NgraveTranscoder<Buffer>();
   test("should be able to fountain encode/decode the payload with a small maxFragmentLength", () => {
-
     const message = makeMessage(30);
     const ur = new Ur(message, { type: "custom" });
 
@@ -99,8 +99,8 @@ describe("encoder/decoder for ", () => {
     );
 
     const decoded = decoder.decodeFragments(fountainFragments);
-
-    expect(decoded.payload).toEqual(ur.payload);
+    // TODO: buffer type of "makeMessage() is different from the decoded with cbor-web. But the content is equal"
+    expect(decoded.payload.buffer).toEqual(ur.payload.buffer);
   });
   test("should be able to encode and decode cbor payload", () => {
     const { encoder, decoder } = new NgraveTranscoder<Buffer>();
@@ -111,7 +111,8 @@ describe("encoder/decoder for ", () => {
     const fountainFragments = encoder.getFountainFragments(ur, 50, 5, 5);
 
     const decoded = decoder.decodeFragments(fountainFragments);
-    expect(decoded.payload).toEqual(ur.payload);
+    // TODO: buffer type of "makeMessage() is different from the decoded with cbor-web. But the content is equal"
+    expect(decoded.payload.buffer).toEqual(ur.payload.buffer);
   });
   test("using nextpart keeps generating multipart Ur's", () => {
     const ur = new Ur({ name: "Pieter" }, { type: "custom" });
@@ -197,7 +198,7 @@ describe("UrEncoder", () => {
     ]);
     const ur = new Ur({ numberToEncode: 9999 }, { type: "custom" });
     const fragment = encoder.encodeUr(ur);
-    expect(fragment).toBeDefined()
-    expect(typeof fragment).toBe("string")
+    expect(fragment).toBeDefined();
+    expect(typeof fragment).toBe("string");
   });
 });

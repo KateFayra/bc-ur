@@ -5,7 +5,7 @@ export interface IDecoder<T, U> {
   decode(payload: T): U;
 }
 
-export class Decoder<T, U> implements IDecoder<T, U> {
+export class Decoder<T, U> {
   private _encodingMethods: IEncodingMethod<any, any>[];
 
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {

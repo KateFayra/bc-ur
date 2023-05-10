@@ -56,7 +56,6 @@ export class UrEncoder<T, U> extends Encoder<T, string> {
     const fragments = this.partitionMessage(cborMessage, fragmentLength);
     const fountainUrs = fragments.map((fragment, index) => {
       const seqNum = toUint32(index + 1);
-      // TODO: do I need to use Buffer.from on the fragment?
       const encodedFragment = super.encode<IMultipartUrPayload>([
         seqNum,
         fragments.length,

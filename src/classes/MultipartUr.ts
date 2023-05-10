@@ -44,8 +44,6 @@ export class MultipartUr<T> extends Ur<T> implements IMultipartUr<T> {
     assert(typeof seqNum === "number");
     assert(typeof seqLength === "number");
 
-    // FIXME: multipart is inherently encoded with cbor and so the payload is a buffer.
-    // assert(Buffer.isBuffer(payload) && payload.length > 0);
     // return combined result
     return new MultipartUr(payload, validatedRegistryType, seqNum, seqLength);
   }

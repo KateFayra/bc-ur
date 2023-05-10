@@ -1,4 +1,4 @@
-import { Decoder } from "./Decoder";
+import { Decoder, IDecoder } from "./Decoder";
 import { MultipartUr } from "./MultipartUr";
 import { Ur } from "./Ur";
 import { IEncodingMethod } from "../interfaces/IEncodingMethod";
@@ -6,6 +6,7 @@ import assert from "assert";
 import { RegistryType } from "../interfaces/RegistryType";
 import { getCRC } from "../utils";
 import { InvalidChecksumError } from "../errors";
+import isBuffer = require("is-buffer");
 
 export type MultipartPayload = {
   seqNum: number;
@@ -15,7 +16,10 @@ export type MultipartPayload = {
   fragment: Buffer;
 };
 
-export class UrDecoder<T,U> extends Decoder<string, U> {
+export class UrDecoder<T, U>
+  extends Decoder<string, U>
+  implements IDecoder<string, U>
+{
   constructor(encodingMethods: IEncodingMethod<any, any>[]) {
     super(encodingMethods);
   }
@@ -99,7 +103,10 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
     });
 
     // concat all the buffer payloads to a single buffer
-    const cborPayload = this.joinFragments(fragmentPayloads,expectedPayload.messageLength);
+    const cborPayload = this.joinFragments(
+      fragmentPayloads,
+      expectedPayload.messageLength
+    );
 
     const checksum = getCRC(cborPayload);
 
@@ -114,13 +121,16 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
     }
   }
 
-/**
- * Join the fragments together.
- * @param fragments fragments to join
- * @param messageLength length of the expected message.
- * @returns the concatenated fragments with the expected length.
- */
-  protected joinFragments = (fragments: Buffer[], messageLength: number): Buffer => {
+  /**
+   * Join the fragments together.
+   * @param fragments fragments to join
+   * @param messageLength length of the expected message.
+   * @returns the concatenated fragments with the expected length.
+   */
+  protected joinFragments = (
+    fragments: Buffer[],
+    messageLength: number
+  ): Buffer => {
     // with 'slice', we remove the additionally created buffer parts, needed to achieve the minimum fragment length.
     return Buffer.concat(fragments).slice(0, messageLength);
   };
@@ -166,7 +176,12 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
 
     const decoded = this.decode<Buffer>(bytewords); // {"_checksum": 556878893, "_fragment": [Object] (type of Buffer), "_messageLength": 2001, "_seqLength": 23, "_seqNum": 6}
 
-    return MultipartUr.toMultipartUr<Buffer>(decoded, registryType, seqNum, seqLength);
+    return MultipartUr.toMultipartUr<Buffer>(
+      decoded,
+      registryType,
+      seqNum,
+      seqLength
+    );
   }
 
   public validateMultipartPayload(decoded: Buffer): MultipartPayload {
@@ -176,9 +191,15 @@ export class UrDecoder<T,U> extends Decoder<string, U> {
     assert(typeof seqLength === "number");
     assert(typeof messageLength === "number");
     assert(typeof checksum === "number");
-    assert(Buffer.isBuffer(fragment) && fragment.length > 0);
-
-    return { seqNum, seqLength, messageLength, checksum, fragment };
+    assert(isBuffer(fragment) && (fragment as unknown as Buffer).length > 0);
+    const validatedFragment = fragment as unknown as Buffer;
+    return {
+      seqNum,
+      seqLength,
+      messageLength,
+      checksum,
+      fragment: validatedFragment,
+    };
   }
 
   /**
